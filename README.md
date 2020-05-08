@@ -1,4 +1,4 @@
-# Vote Tracker
+# VoteTracker
 
 ## Dependencies
 
@@ -15,7 +15,7 @@ required features may not be available in older versions.
   - Install `ansible` via apt (Ubuntu), yum (Fedora), [homebrew][homebrew] (OS
     X), etc. See the [Ansible installation
     instructions](http://docs.ansible.com/intro_installation.html) for detailed,
-    platform-specific information.
+    platform-specific information.  If you don't end up with version 2, try `easy_install pip` and `pip install ansible`.
 * **[VirtualBox](https://www.virtualbox.org/)**
   - [Download](https://www.virtualbox.org/wiki/Downloads) (All platforms)
   - Install `virtualbox` via [homebrew cask][cask] (OS X)
@@ -32,10 +32,8 @@ required features may not be available in older versions.
 
 1. Run `npm install` to install local dependencies.
 2. Run `vagrant up` to set up postgresql database.
-3. Run `npm run migrate` to initialize the database model.
-4. Run `vagrant ssh`
-5. On the Vagrant box, run `cat /mnt/vagrant/fixture/*.sql | psql -U postgres votetracker` to import the fixtures.
-6. `exit` from the vagrant ssh.
+3. Run `npm run migrate:up` to initialize the database model.
+4. Run `vagrant ssh -- cat /mnt/vagrant/fixtures/*.sql \| psql -U postgres votetracker` to import the fixtures.
 5. Run `npm start` to start the file-watcher, api and live-reload process.
 6. Browse to <http://localhost:8080/> for the client.
 7. Browse to <http://localhost:8000/>  or <http://localhost:8080/api/> for the server.
@@ -45,4 +43,10 @@ required features may not be available in older versions.
 ## Production Notes
 
 In production, the server component is mounted at:
-http://votetracker.gnarf.net/api
+http://votetracker.berniesanders.com/api
+
+## Troubleshooting Local Environment
+
+### Vagrant port forwarding issue "The forwarded port to 5432 is already in use on the host machine."
+
+If you see this error, it's possible you've already got postgres (the database) already running on your machine. If you're on a 'nix system, try entering `sudo service --status-all` at the command line. If you see something that looks like this `[ + ]  postgresql` in the output, stop the service by entering `sudo service postgresql stop` and attempt to bring up vagrant again.

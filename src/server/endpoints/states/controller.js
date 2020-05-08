@@ -33,16 +33,40 @@ export function counties(req, res) {
 
 const locationsQuery = memoize(params => {
   debug('First Query', params);
+  params.empty = '';
   return db.query(
-    'SELECT DISTINCT' +
-    ' id, pollinglocation, pollingaddress, pollingcity, state_code, pollingzip' +
-    ' FROM polling_location WHERE state_code = ${state} AND county = ${county}',
+    'SELECT DISTINCT ' +
+    ' pl.id, pl.pollinglocation, pl.pollingaddress, pl.pollingcity, pl.state_code, ' +
+    ' coalesce(pl.pollingzip, \'\') as pollingzip ' +
+    'FROM precincts AS p ' +
+    '  LEFT JOIN precinct_polling_location as ppl ON p.id = ppl.precinct_id ' +
+    '  LEFT JOIN polling_location AS pl ON pl.id = ppl.polling_location_id ' +
+    'WHERE p.state_code = ${state} AND p.county = ${county} AND ' +
+    '  NOT(pl.id IS NULL OR pl.pollinglocation=${empty})',
     params
   );
 }, params => `${params.state},${params.county}`);
 
 export function locations(req, res) {
   locationsQuery(req.params)
+  .then(result => {
+    res.send(result);
+  });
+}
+
+const precinctsQuery = memoize(params => {
+  debug('First Query', params);
+  return db.query(
+    'SELECT DISTINCT' +
+    ' id, name' +
+    ' FROM precincts WHERE state_code = ${state} AND county = ${county}' +
+    'ORDER BY name',
+    params
+  );
+}, params => `${params.state},${params.county}`);
+
+export function precincts(req, res) {
+  precinctsQuery(req.params)
   .then(result => {
     res.send(result);
   });
